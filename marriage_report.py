@@ -6,6 +6,7 @@ Description:
 Usage:
  python marriage_report.py
 """
+import csv
 import os
 import sqlite3
 from create_relationships import db_path, script_dir
@@ -27,7 +28,19 @@ def get_married_couples():
     # TODO: Function body
     # Hint: See example code in lab instructions entitled "Get a List of Relationships"
     con = sqlite3.connect(db_path)
-    return
+    cur=con.cursor()
+    
+    married_couple_query="""
+    SELECT person1.name,person2.name,start_date
+    FROM relationship r
+    JOIN people person1 ON relationships.person1_id=person1.id
+    JOIN people person2 ON relationships.person2_id=person2.id
+    WHERE type='married'
+    """
+    cur.execute(married_couple_query)
+    married_couples=cur.fetchall()
+    con.close()
+    return married_couples
 
 def save_married_couples_csv(married_couples, csv_path):
     """Saves list of married couples to a CSV file, including both people's 
@@ -38,8 +51,13 @@ def save_married_couples_csv(married_couples, csv_path):
         csv_path (str): Path of CSV file
     """
     # TODO: Function body
+    with open(csv_path,'w',newline='')as csvfile:
+        csvwriter= csv.writer(csvfile)
+        
+        csvwriter.writerow(['Person1','Person2','Wedding Anniversary'])
+        for couple in married_couples:
+            csvwriter.writerow(couple)
     # Hint: We did this in Lab 7.
-    return
 
 if __name__ == '__main__':
-   main()
+    main()
