@@ -8,7 +8,8 @@ Usage:
 """
 import csv
 import os
-import sqlite3
+import sqlite3 
+import pandas as pd
 from create_relationships import db_path, script_dir
 
 def main():
@@ -31,16 +32,18 @@ def get_married_couples():
     cur=con.cursor()
     
     married_couple_query="""
-    SELECT person1.name,person2.name,start_date
+    SELECT p1.name, p2.name, r.start_date
     FROM relationship r
-    JOIN people person1 ON relationships.person1_id=person1.id
-    JOIN people person2 ON relationships.person2_id=person2.id
-    WHERE type='married'
+    JOIN people p1 ON r.person1_id = p1.id
+    JOIN people p2 ON r.person2_id = p2.id
+    WHERE r.type = 'married'
     """
     cur.execute(married_couple_query)
     married_couples=cur.fetchall()
     con.close()
+    
     return married_couples
+
 
 def save_married_couples_csv(married_couples, csv_path):
     """Saves list of married couples to a CSV file, including both people's 
@@ -51,12 +54,8 @@ def save_married_couples_csv(married_couples, csv_path):
         csv_path (str): Path of CSV file
     """
     # TODO: Function body
-    with open(csv_path,'w',newline='')as csvfile:
-        csvwriter= csv.writer(csvfile)
-        
-        csvwriter.writerow(['Person1','Person2','Wedding Anniversary'])
-        for couple in married_couples:
-            csvwriter.writerow(couple)
+    df=pd.DataFrame(married_couples,columns=['Person1','Person2','Wedding Anniversary'])
+    df.to_csv(csv_path,index=False)
     # Hint: We did this in Lab 7.
 
 if __name__ == '__main__':
